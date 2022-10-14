@@ -1,0 +1,78 @@
+Advanced PyTest Notes 
+
+# conftest.py exercise # - tested value declared in fixture across multiple tests in different functions
+
+- conftest.py file makes the fixtures in it available to all tests within that folder.
+- in the exercise is a fixture function with name 'input_value()' that, when invoked, returns integer 10.  
+
+
+# test_retval1 exercise # - using conftest.py fixture for assert test 
+
+- 'input_value()' fixture is used as a parameter in the test .
+- the return value of 'input_value()' is assigned to a variable of the same name (in 'test_func_retval()' ).
+- 'input_value' variable is compared for equality to the return value from invoking 'func_retval()'.
+- ran pytest and it PASSES, as 10==10.
+
+
+# parametrization exercises # - run tests multiple times with different inputs
+- two types: test parametrization and fixture parametrization.
+
+I. test parametrization
+- used the 'pytest.mark.parametrize' decorator.
+    - contains two arguments: str variables "numerator, operator" and a list.
+    - first number in list will be used for numerator value.
+    - second number will be used as the operator value.
+
+- '%' modulo operator used (divides left by right, then returns the remainder).
+- assert statement checks if a numerator divided by 5 has a remainder of 0.
+
+- 'test_divisible_by_five()' test runs four times, iterating once per item on the list.
+- only the third test should fail, the rest pass 
+- ran 'pytest test_param.py -v' (-v flag for verbose output)
+
+
+II. fixture parametrization
+- class Numerator initializes single instance attribute, 'num_list', with default value [0,0].
+- fixture decorator has a parameter list: 'params = [[...]]'.
+    - 'params' keyword required, outer data structure is a list but inside values can be other data type.
+
+- fixture function 'divisible_by_two' defined and has parameter 'request'.
+- when this fixture function runs, pytest will run once per item on list. -- three times.
+    - each iteration, pytest passes in request object.
+    - pytest ensures that request object will have a param attribute with the current item from the 'params' list.
+    - the function body is able to access and test each parameter. 
+
+- 'divisible_by_two' instantiates an object of the Numerator class and returns it.
+- object can now be accessed in a test function by using 'divisible_by_two' as a parameter.
+
+- 'test_divisible_by_two' instantiates an object of the Numerator class, with different values for the 'num.list' attribute.
+    - test runs three times, each time looping through one of the three lists.
+    - ran 'pytest test_param.py -v' verbose flag.
+    - as expected, two tests fail and the last one passes.
+
+
+# command-line options for pytest exercise #
+
+- a list of these command-line options can be seen using - pytest -h 
+    - or online at https://docs.pytest.org/en/6.2.x/reference.html#command-line-flags 
+
+I. Stopping test suite after a certain number of test failures
+
+- '--maxfail=num' option to stop a test suite after 'num' number of times 
+- ran 'pytest test_nfailsuite.py -v --maxfail=1'
+    - change the value for '--maxfail=#' (--maxfail=2 and --maxfail=3)
+    - all tests should fail.
+
+
+II. Run multiple test in parallel -- using pytest plugin pytest-xdist
+- useful when test suites are very large 
+
+- make sure your Python testing environment is activated
+-   python -m pip install pytest-xdist
+
+- '-n' option allows to specify number of tests to run in parallel 
+- using test_param.py file
+    - ran 'pytest test_param.py -v -n 3' 
+    -three forked processes were spawned to run three tests in parallel
+
+    
