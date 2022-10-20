@@ -60,8 +60,8 @@ I. Stopping test suite after a certain number of test failures
 
 - '--maxfail=num' option to stop a test suite after 'num' number of times 
 - ran 'pytest test_nfailsuite.py -v --maxfail=1'
-    - change the value for '--maxfail=#' (--maxfail=2 and --maxfail=3)
-    - all tests should fail.
+    - change the value for 'num' (--maxfail=2 and --maxfail=3)
+    - all tests expected to fail.
 
 
 II. Run multiple test in parallel -- using pytest plugin pytest-xdist
@@ -75,4 +75,60 @@ II. Run multiple test in parallel -- using pytest plugin pytest-xdist
     - ran 'pytest test_param.py -v -n 3' 
     -three forked processes were spawned to run three tests in parallel
 
-    
+
+# Running tests without specifying a file # 
+
+- run 'pytest' on terminal (make sure testenv is activated)
+- it will run every test in the current folder and output a summary 
+    - green dot means passed, red F means test failed 
+
+
+# Using the pytest -k flag # 
+
+- flag '-k' in pytest will only run tests functions that match the following substring expression
+- test_retval2.py file used in exercise
+
+- ran 'pytest -k func_retval -v' on terminal 
+    - no filename specified so pytest ran all test-*.py files
+        - test_retval1.py, test_func_retval passed
+        - test_retval2.py, test_func_retval failed
+            - All other tests, including the test_simple_pass test in test_retval2.py, were deselected and not run 
+
+- ran 'pytest test_retval2.py -k simple -v'
+    - provided filename, pytest only collects tests in that file 
+    - -k flag narrows down test functions, 'simple' passed as the argument
+    - only test_simple_pass() test ran and it PASSES
+
+
+# Using xfail or skipping tests # 
+- useful decorators: pytest.mark.xfail and pytest.mark.skip
+
+- when test is decorated with @pytest.mark.xfail, it is expected to fail 
+    - testing bugs, functions not implemented yet
+    - test failing will result in yellow 'XFAIL' 
+
+- when test is decorated with @pytest.mark.skip, it will not run the test at all
+
+- ran 'pytest test_xfail_skip.py -v'
+        test_xfail_skip.py::test_func_one XFAIL                             [ 50%] 
+        test_xfail_skip.py::test_func_two SKIPPED (unconditional skip)      [100%] 
+
+
+# Using custom marks # 
+- run tests based on that custom mark
+- @pytest.mark.markone decorator to test_func_two(), which already has the @pytest.mark.skip decorator 
+        - more than one decorator can exist on the same function 
+- test_func_three() and test_func_four(), each decorated with markone and marktwo
+
+- ran 'pytest -m markone'
+    - two marked functions @pytest.mark.markone and @pytest.mark.marktwo
+    - warnings summary include 11 warnings, this is due to not registering custom marks 
+        - to register: create pytest.ini file and update your marks, mark name descriptions are optional
+- ran 'pytest -m markone' again 
+    - same results as before but with no warnings
+
+- ran 'pytest -m "markone or marktwo" -v'
+    - "markone or marktwo" argument for -m flag caused all tests to run in either markone OR marktwo
+
+- ran 'pytest -m "not markone" -v'
+    - results in all tests, except for markone, to run 
